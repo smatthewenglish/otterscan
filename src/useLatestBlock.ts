@@ -19,12 +19,7 @@ export const useLatestBlockHeader = (provider?: JsonRpcApiProvider) => {
       // const _raw = await provider.send("erigon_getHeaderByNumber", [
       //   blockNumber,
       // ]);
-      //console.log('BLOCK NUMBER - 00:', blockNumber);
-
       const probeBlock1 = await provider.send("eth_getBlockByNumber", [ "0x" + blockNumber.toString(16), true]);
-
-      console.log('BLOCK NUMBER - 00:', probeBlock1);
-
       const _raw = extractBlockHeader(probeBlock1);
       const _block = new Block(formatter.blockParams(_raw), provider);
       setLatestBlock(_block);
@@ -33,9 +28,6 @@ export const useLatestBlockHeader = (provider?: JsonRpcApiProvider) => {
     // Immediately read and set the latest block header
     const readLatestBlock = async () => {
       const blockNum = await provider.getBlockNumber();
-
-      console.log('BLOCK NUMBER:', blockNum);
-
       await getAndSetBlockHeader(blockNum);
     };
     readLatestBlock();
