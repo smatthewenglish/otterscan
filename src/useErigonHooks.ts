@@ -143,63 +143,114 @@ export type BlockTransactionsPage = {
   txs: ProcessedTransaction[];
 };
 
+
+
 const blockTransactionsFetcher: Fetcher<
   BlockTransactionsPage,
   [JsonRpcApiProvider, number, number, number]
 > = async ([provider, blockNumber, pageNumber, pageSize]) => {
 
-
   const block = await provider.send("eth_getBlockByNumber", ["0x" + blockNumber.toString(16), true]);
-  // block.transactions.forEach((transaction: any, index: any) => {
-  //   console.log(`Transaction ${index}:`, {
-  //     hash: transaction.hash,
-  //     from: transaction.from,
-  //     to: transaction.to,
-  //     value: transaction.value
-  //   });
-  // });
-  //const result = block.transactions;
-
-  console.log("zeek: \n", block.transactions[0]);
-
-  // const result = await provider.send("ots_getBlockTransactions", [
-  //   blockNumber,
-  //   pageNumber,
-  //   pageSize,
-  // ]);
   
   let totalTransactions = 0;
   const rawTxs: ProcessedTransaction[] = [];
 
   if (block && block.transactions && Array.isArray(block.transactions)) {
-
     totalTransactions = block.transactions.length;
 
-    for (let i = 0; i < block.transactions.length; i++) {
+    const startIndex = pageNumber * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalTransactions);
+
+    for (let i = startIndex; i < endIndex; i++) {
       const t = block.transactions[i];
       const receipt = await provider.send("eth_getTransactionReceipt", [t.hash]);
-    
+
+      let fee: bigint;
+      let effectiveGasPrice: bigint;
+
+      if (t.type === '0x2' || t.type === '0x3') {
+        const baseFeePerGas = BigInt(block.baseFeePerGas);
+        const maxFeePerGas = BigInt(t.maxFeePerGas);
+        const maxPriorityFeePerGas = BigInt(t.maxPriorityFeePerGas);
+        const tip = maxFeePerGas - baseFeePerGas < maxPriorityFeePerGas
+          ? maxFeePerGas - baseFeePerGas
+          : maxPriorityFeePerGas;
+        effectiveGasPrice = baseFeePerGas + tip;
+      } else {
+        effectiveGasPrice = BigInt(t.gasPrice);
+      }
+
+      fee = BigInt(receipt.gasUsed) * effectiveGasPrice;
+
       rawTxs.push({
         blockNumber: blockNumber,
-        timestamp: block.timestamp,
+        timestamp: parseInt(block.timestamp, 16),
         miner: block.miner,
         idx: i,
         hash: t.hash,
         from: t.from ?? undefined,
         to: t.to ?? null,
         createdContractAddress: receipt.contractAddress ?? undefined,
-        value: t.value,
-        type: t.type,
-        fee: formatter.bigInt(BigInt(receipt.gasUsed) * BigInt(t.gasPrice)),
-        gasPrice: formatter.bigInt(t.gasPrice),
-        data: t.data,
-        status: formatter.number(receipt.status),
+        value: BigInt(t.value),
+        type: parseInt(t.type, 16),
+        fee,
+        gasPrice: effectiveGasPrice,
+        data: t.data !== undefined && t.data !== null ? t.data : "0x",
+        status: parseInt(receipt.status, 16),
       });
     }
-}
+  }
   
   return { total: totalTransactions, txs: rawTxs };
 };
+
+// const blockTransactionsFetcher: Fetcher<
+//   BlockTransactionsPage,
+//   [JsonRpcApiProvider, number, number, number]
+// > = async ([provider, blockNumber, pageNumber, pageSize]) => {
+
+
+//   const block = await provider.send("eth_getBlockByNumber", ["0x" + blockNumber.toString(16), true]);
+  
+//   let totalTransactions = 0;
+//   const rawTxs: ProcessedTransaction[] = [];
+
+//   if (block && block.transactions && Array.isArray(block.transactions)) {
+
+//     totalTransactions = block.transactions.length;
+
+
+//     // Process only the transactions for the current page
+//     const startIndex = pageNumber * pageSize;
+//     const endIndex = Math.min(startIndex + pageSize, totalTransactions);
+
+
+//     //for (let i = 0; i < block.transactions.length; i++) {
+//     for (let i = startIndex; i < endIndex; i++) {
+//       const t = block.transactions[i];
+//       const receipt = await provider.send("eth_getTransactionReceipt", [t.hash]);
+    
+//       rawTxs.push({
+//         blockNumber: blockNumber,
+//         timestamp: block.timestamp,
+//         miner: block.miner,
+//         idx: i,
+//         hash: t.hash,
+//         from: t.from ?? undefined,
+//         to: t.to ?? null,
+//         createdContractAddress: receipt.contractAddress ?? undefined,
+//         value: t.value,
+//         type: t.type,
+//         fee: formatter.bigInt(BigInt(receipt.gasUsed) * BigInt(t.gasPrice)),
+//         gasPrice: formatter.bigInt(t.gasPrice),
+//         data: t.data,
+//         status: formatter.number(receipt.status),
+//       });
+//     }
+// }
+  
+//   return { total: totalTransactions, txs: rawTxs };
+// };
 
 export const useBlockTransactions = (
   provider: JsonRpcApiProvider | undefined,
