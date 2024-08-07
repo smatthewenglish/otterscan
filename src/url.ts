@@ -15,10 +15,6 @@ export const tokenLogoURL = (
   address: string,
 ): string => `${assetsURLPrefix}/assets/${chainId}/${address}/logo.png`;
 
-// export const chainInfoURL = (
-//   assetsURLPrefix: string,
-//   chainId: bigint,
-// ): string => `${assetsURLPrefix}/chains/eip155-${chainId}.json`;
 export const chainInfoURL = (
   assetsURLPrefix: string,
   chainId: bigint,

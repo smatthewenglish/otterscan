@@ -16,9 +16,6 @@ export const useLatestBlockHeader = (provider?: JsonRpcApiProvider) => {
     }
 
     const getAndSetBlockHeader = async (blockNumber: number) => {
-      // const _raw = await provider.send("erigon_getHeaderByNumber", [
-      //   blockNumber,
-      // ]);
       const probeBlock1 = await provider.send("eth_getBlockByNumber", [ "0x" + blockNumber.toString(16), true]);
       const _raw = extractBlockHeader(probeBlock1);
       const _block = new Block(formatter.blockParams(_raw), provider);

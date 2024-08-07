@@ -47,12 +47,6 @@ export interface ExtendedBlock extends BlockParams {
   gasUsedDepositTx?: bigint;
 }
 
-
-
-
-
-
-
 function extractBlockHeader(block: any) {
   console.log('Full block object:', block);
 
@@ -92,30 +86,17 @@ function extractBlockHeader(block: any) {
   };
 }
 
-
-
-
 export const readBlock = async (
   provider: JsonRpcApiProvider,
   blockNumberOrHash: string,
 ): Promise<ExtendedBlock | null> => {
-  // let blockPromise: Promise<any>;
-  // if (isHexString(blockNumberOrHash, 32)) {
-  //   blockPromise = provider.send("ots_getBlockDetailsByHash", [
-  //     blockNumberOrHash,
-  //   ]);
-  // } else {
     const blockNumber = parseInt(blockNumberOrHash);
     if (isNaN(blockNumber) || blockNumber < 0) {
       return null;
     }
-    //blockPromise = provider.send("ots_getBlockDetails", [blockNumber]);
     const probeBlock1 = await provider.send("eth_getBlockByNumber", [ "0x" + blockNumber.toString(16), true]);
     const _rawBlock = extractBlockHeader(probeBlock1);
 
-  // }
-
-  //const _rawBlock = await blockPromise;
   if (_rawBlock === null) {
     return null;
   }
@@ -142,8 +123,6 @@ export type BlockTransactionsPage = {
   total: number;
   txs: ProcessedTransaction[];
 };
-
-
 
 const blockTransactionsFetcher: Fetcher<
   BlockTransactionsPage,
@@ -203,54 +182,6 @@ const blockTransactionsFetcher: Fetcher<
   
   return { total: totalTransactions, txs: rawTxs };
 };
-
-// const blockTransactionsFetcher: Fetcher<
-//   BlockTransactionsPage,
-//   [JsonRpcApiProvider, number, number, number]
-// > = async ([provider, blockNumber, pageNumber, pageSize]) => {
-
-
-//   const block = await provider.send("eth_getBlockByNumber", ["0x" + blockNumber.toString(16), true]);
-  
-//   let totalTransactions = 0;
-//   const rawTxs: ProcessedTransaction[] = [];
-
-//   if (block && block.transactions && Array.isArray(block.transactions)) {
-
-//     totalTransactions = block.transactions.length;
-
-
-//     // Process only the transactions for the current page
-//     const startIndex = pageNumber * pageSize;
-//     const endIndex = Math.min(startIndex + pageSize, totalTransactions);
-
-
-//     //for (let i = 0; i < block.transactions.length; i++) {
-//     for (let i = startIndex; i < endIndex; i++) {
-//       const t = block.transactions[i];
-//       const receipt = await provider.send("eth_getTransactionReceipt", [t.hash]);
-    
-//       rawTxs.push({
-//         blockNumber: blockNumber,
-//         timestamp: block.timestamp,
-//         miner: block.miner,
-//         idx: i,
-//         hash: t.hash,
-//         from: t.from ?? undefined,
-//         to: t.to ?? null,
-//         createdContractAddress: receipt.contractAddress ?? undefined,
-//         value: t.value,
-//         type: t.type,
-//         fee: formatter.bigInt(BigInt(receipt.gasUsed) * BigInt(t.gasPrice)),
-//         gasPrice: formatter.bigInt(t.gasPrice),
-//         data: t.data,
-//         status: formatter.number(receipt.status),
-//       });
-//     }
-// }
-  
-//   return { total: totalTransactions, txs: rawTxs };
-// };
 
 export const useBlockTransactions = (
   provider: JsonRpcApiProvider | undefined,

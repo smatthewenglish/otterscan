@@ -22,34 +22,18 @@ export const createAndProbeProvider = async (
   }
 
   let provider: JsonRpcApiProvider;
-  if (erigonURL?.startsWith("ws://") || erigonURL?.startsWith("wss://")) {
-    provider = new WebSocketProvider(erigonURL, undefined, {
-      staticNetwork: true,
-    });
-  } else {
+    // @smatthewenglish note - not using websockets
     // Batching takes place by default
     provider = new JsonRpcProvider(erigonURL, undefined, {
       staticNetwork: true,
     });
-  }
 
   // Check if it is at least a regular ETH node
   const probeBlockNumber = provider.getBlockNumber();
-  
-  //const probeHeader1 = provider.send("erigon_getHeaderByNumber", [0]); //[1]);
 
-  const probeBlock1 = await provider.send("eth_getBlockByNumber", ['0x2', false]);
+  const probeBlock1 = await provider.send("eth_getBlockByNumber", ['0x0', false]);
   const probeHeader1 = extractBlockHeader(probeBlock1);
 
-  // const probeHeader1 = await provider.send("erigon_getHeaderByNumber", [0]); //[1]);
-  // extractBlockHeader(probeHeader1);
-
-
-  // const probeOtsAPI = provider.send("ots_getApiLevel", []).then((level) => {
-  //   if (level < MIN_API_LEVEL) {
-  //     throw new ProbeError(ConnectionStatus.NOT_OTTERSCAN_PATCHED, erigonURL);
-  //   }
-  // });
   const probeOtsAPI = MIN_API_LEVEL;
 
   try {

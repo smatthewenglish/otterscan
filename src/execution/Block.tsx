@@ -23,9 +23,6 @@ const Block: React.FC = () => {
       ? block.number
       : undefined
     : parseInt(blockNumberOrHash);
-
-  console.log("block number 999: ", blockNumber);
-
   let latestBlockNumber = useLatestBlockNumber(provider);
   if (blockNumber === undefined) {
     // Disable navigation while the block hash's block number is unknown
