@@ -147,77 +147,58 @@ const blockTransactionsFetcher: Fetcher<
   BlockTransactionsPage,
   [JsonRpcApiProvider, number, number, number]
 > = async ([provider, blockNumber, pageNumber, pageSize]) => {
-  const result = await provider.send("ots_getBlockTransactions", [
-    blockNumber,
-    pageNumber,
-    pageSize,
-  ]);
-  const _block = formatter.blockParamsWithTransactions(result.fullblock);
-  const _receipts = result.receipts;
 
-  const rawTxs = _block.transactions
-    .map((t: TransactionResponseParams, i: number): ProcessedTransaction => {
-      const _rawReceipt = _receipts[i];
-      // Empty logs on purpose because of ethers formatter requires it
-      _rawReceipt.logs = [];
-      const _receipt: TransactionReceiptParams =
-        formatter.transactionReceiptParams(_rawReceipt);
 
-      if (t.hash === null) {
-        throw new Error("blockTransactionsFetcher: unknown tx hash");
-      }
+  const block = await provider.send("eth_getBlockByNumber", ["0x" + blockNumber.toString(16), true]);
+  // block.transactions.forEach((transaction: any, index: any) => {
+  //   console.log(`Transaction ${index}:`, {
+  //     hash: transaction.hash,
+  //     from: transaction.from,
+  //     to: transaction.to,
+  //     value: transaction.value
+  //   });
+  // });
+  //const result = block.transactions;
 
-      let fee: bigint;
-      let effectiveGasPrice: bigint;
-      if (t.type === 2 || t.type === 3) {
-        const tip =
-          t.maxFeePerGas! - _block.baseFeePerGas! < t.maxPriorityFeePerGas!
-            ? t.maxFeePerGas! - _block.baseFeePerGas!
-            : t.maxPriorityFeePerGas!;
-        effectiveGasPrice = _block.baseFeePerGas! + tip;
-      } else {
-        effectiveGasPrice = t.gasPrice!;
-      }
+  console.log("zeek: \n", block.transactions[0]);
 
-      // Handle Optimism-specific values
-      let l1Fee: bigint | undefined;
-      if (isOptimisticChain(provider._network.chainId)) {
-        if (t.type === 126) {
-          fee = 0n;
-          effectiveGasPrice = 0n;
-        } else {
-          l1Fee = formatter.bigInt(_rawReceipt.l1Fee);
-          ({ fee, gasPrice: effectiveGasPrice } = getOpFeeData(
-            t.type,
-            effectiveGasPrice,
-            _receipt.gasUsed!,
-            l1Fee,
-          ));
-        }
-      } else {
-        fee = formatter.bigInt(_receipt.gasUsed) * effectiveGasPrice;
-      }
+  // const result = await provider.send("ots_getBlockTransactions", [
+  //   blockNumber,
+  //   pageNumber,
+  //   pageSize,
+  // ]);
+  
+  let totalTransactions = 0;
+  const rawTxs: ProcessedTransaction[] = [];
 
-      return {
+  if (block && block.transactions && Array.isArray(block.transactions)) {
+
+    totalTransactions = block.transactions.length;
+
+    for (let i = 0; i < block.transactions.length; i++) {
+      const t = block.transactions[i];
+      const receipt = await provider.send("eth_getTransactionReceipt", [t.hash]);
+    
+      rawTxs.push({
         blockNumber: blockNumber,
-        timestamp: _block.timestamp,
-        miner: _block.miner,
+        timestamp: block.timestamp,
+        miner: block.miner,
         idx: i,
         hash: t.hash,
         from: t.from ?? undefined,
         to: t.to ?? null,
-        createdContractAddress: _receipt.contractAddress ?? undefined,
+        createdContractAddress: receipt.contractAddress ?? undefined,
         value: t.value,
         type: t.type,
-        fee,
-        gasPrice: effectiveGasPrice,
+        fee: formatter.bigInt(BigInt(receipt.gasUsed) * BigInt(t.gasPrice)),
+        gasPrice: formatter.bigInt(t.gasPrice),
         data: t.data,
-        status: formatter.number(_receipt.status),
-      };
-    })
-    .reverse();
-
-  return { total: result.fullblock.transactionCount, txs: rawTxs };
+        status: formatter.number(receipt.status),
+      });
+    }
+}
+  
+  return { total: totalTransactions, txs: rawTxs };
 };
 
 export const useBlockTransactions = (
