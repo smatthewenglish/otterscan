@@ -35,7 +35,12 @@ export const createAndProbeProvider = async (
 
   // Check if it is at least a regular ETH node
   const probeBlockNumber = provider.getBlockNumber();
-  const probeHeader1 = provider.send("erigon_getHeaderByNumber", [1]);
+  
+  //const probeHeader1 = provider.send("erigon_getHeaderByNumber", [0]); //[1]);
+  const probeBlock1 = await provider.send("eth_getBlockByNumber", [1, false]);
+  const probeHeader1 = extractBlockHeader(probeBlock1);
+
+
   const probeOtsAPI = provider.send("ots_getApiLevel", []).then((level) => {
     if (level < MIN_API_LEVEL) {
       throw new ProbeError(ConnectionStatus.NOT_OTTERSCAN_PATCHED, erigonURL);
@@ -77,3 +82,23 @@ export const createAndProbeProvider = async (
     throw new Error("Must not happen", { cause: err });
   }
 };
+
+function extractBlockHeader(block: any) {
+  return {
+    parentHash: block.parentHash,
+    ommersHash: block.sha3Uncles,
+    beneficiary: block.miner,
+    stateRoot: block.stateRoot,
+    transactionsRoot: block.transactionsRoot,
+    receiptsRoot: block.receiptsRoot,
+    logsBloom: block.logsBloom,
+    difficulty: block.difficulty,
+    number: block.number,
+    gasLimit: block.gasLimit,
+    gasUsed: block.gasUsed,
+    timestamp: block.timestamp,
+    extraData: block.extraData,
+    mixHash: block.mixHash,
+    nonce: block.nonce
+  };
+}
