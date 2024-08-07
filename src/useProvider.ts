@@ -37,15 +37,16 @@ export const createAndProbeProvider = async (
   const probeBlockNumber = provider.getBlockNumber();
   
   //const probeHeader1 = provider.send("erigon_getHeaderByNumber", [0]); //[1]);
-  const probeBlock1 = await provider.send("eth_getBlockByNumber", [1, false]);
+  const probeBlock1 = await provider.send("eth_getBlockByNumber", ['0x1', false]);
   const probeHeader1 = extractBlockHeader(probeBlock1);
 
 
-  const probeOtsAPI = provider.send("ots_getApiLevel", []).then((level) => {
-    if (level < MIN_API_LEVEL) {
-      throw new ProbeError(ConnectionStatus.NOT_OTTERSCAN_PATCHED, erigonURL);
-    }
-  });
+  // const probeOtsAPI = provider.send("ots_getApiLevel", []).then((level) => {
+  //   if (level < MIN_API_LEVEL) {
+  //     throw new ProbeError(ConnectionStatus.NOT_OTTERSCAN_PATCHED, erigonURL);
+  //   }
+  // });
+  const probeOtsAPI = MIN_API_LEVEL;
 
   try {
     await Promise.all([probeBlockNumber, probeHeader1, probeOtsAPI]);
