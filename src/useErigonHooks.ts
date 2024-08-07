@@ -47,24 +47,75 @@ export interface ExtendedBlock extends BlockParams {
   gasUsedDepositTx?: bigint;
 }
 
+
+
+
+
+
+
+function extractBlockHeader(block: any) {
+  console.log('Full block object:', block);
+
+  return {
+    block: {
+      baseFeePerGas: "0x3b9aca00",
+      blobGasUsed: "0x0",
+      difficulty: block.difficulty,
+      excessBlobGas: "0x0",
+      extraData: block.extraData,
+      gasLimit: block.gasLimit,
+      gasUsed: block.gasUsed,
+      hash: block.hash,
+      logsBloom: block.logsBloom,
+      miner: block.miner,
+      mixHash: block.mixHash,
+      nonce: block.nonce,
+      number: block.number,
+      parentHash: block.parentHash,
+      receiptsRoot: block.receiptsRoot,
+      sha3Uncles: block.sha3Uncles,
+      size: block.size,
+      stateRoot: block.stateRoot,
+      timestamp: block.timestamp,
+      totalDifficulty: "0x0",
+      transactions: [],
+      transactionsRoot: block.transactionsRoot,
+      uncles: [],
+      transactionCount: block.transactions ? block.transactions.length : 0,
+    },
+    issuance: {
+      blockReward: "0x0",
+      uncleReward: "0x0",
+    },
+    totalFees: "0x0",
+    gasUsedDepositTx: "0x0"
+  };
+}
+
+
+
+
 export const readBlock = async (
   provider: JsonRpcApiProvider,
   blockNumberOrHash: string,
 ): Promise<ExtendedBlock | null> => {
-  let blockPromise: Promise<any>;
-  if (isHexString(blockNumberOrHash, 32)) {
-    blockPromise = provider.send("ots_getBlockDetailsByHash", [
-      blockNumberOrHash,
-    ]);
-  } else {
+  // let blockPromise: Promise<any>;
+  // if (isHexString(blockNumberOrHash, 32)) {
+  //   blockPromise = provider.send("ots_getBlockDetailsByHash", [
+  //     blockNumberOrHash,
+  //   ]);
+  // } else {
     const blockNumber = parseInt(blockNumberOrHash);
     if (isNaN(blockNumber) || blockNumber < 0) {
       return null;
     }
-    blockPromise = provider.send("ots_getBlockDetails", [blockNumber]);
-  }
+    //blockPromise = provider.send("ots_getBlockDetails", [blockNumber]);
+    const probeBlock1 = await provider.send("eth_getBlockByNumber", [ "0x" + blockNumber.toString(16), true]);
+    const _rawBlock = extractBlockHeader(probeBlock1);
 
-  const _rawBlock = await blockPromise;
+  // }
+
+  //const _rawBlock = await blockPromise;
   if (_rawBlock === null) {
     return null;
   }
