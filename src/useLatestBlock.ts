@@ -16,9 +16,16 @@ export const useLatestBlockHeader = (provider?: JsonRpcApiProvider) => {
     }
 
     const getAndSetBlockHeader = async (blockNumber: number) => {
-      const _raw = await provider.send("erigon_getHeaderByNumber", [
-        blockNumber,
-      ]);
+      // const _raw = await provider.send("erigon_getHeaderByNumber", [
+      //   blockNumber,
+      // ]);
+      //console.log('BLOCK NUMBER - 00:', blockNumber);
+
+      const probeBlock1 = await provider.send("eth_getBlockByNumber", [ "0x" + blockNumber.toString(16), true]);
+
+      console.log('BLOCK NUMBER - 00:', probeBlock1);
+
+      const _raw = extractBlockHeader(probeBlock1);
       const _block = new Block(formatter.blockParams(_raw), provider);
       setLatestBlock(_block);
     };
@@ -26,6 +33,9 @@ export const useLatestBlockHeader = (provider?: JsonRpcApiProvider) => {
     // Immediately read and set the latest block header
     const readLatestBlock = async () => {
       const blockNum = await provider.getBlockNumber();
+
+      console.log('BLOCK NUMBER:', blockNum);
+
       await getAndSetBlockHeader(blockNum);
     };
     readLatestBlock();
@@ -77,3 +87,81 @@ export const useLatestBlockNumber = (provider?: JsonRpcApiProvider) => {
 
   return latestBlock;
 };
+
+function extractBlockHeader(block: any) {
+  console.log('Xull block object:');
+  console.log(block);
+
+  let baseFeePerGas = "0x3b9aca00";
+  console.log('baseFeePerGas:', baseFeePerGas);
+  let blobGasUsed = "0x0";
+  console.log('blobGasUsed:', blobGasUsed);
+  let difficulty = block.difficulty;
+  console.log('difficulty:', difficulty);
+  let excessBlobGas = "0x0";
+  console.log('excessBlobGas:', excessBlobGas);
+  let extraData = block.extraData;
+  console.log('extraData:', extraData);
+  let gasLimit = block.gasLimit;
+  console.log('gasLimit:', gasLimit);
+  let gasUsed = block.gasUsed;
+  console.log('gasUsed:', gasUsed);
+  let hash = block.hash;
+  console.log('hash:', hash);
+  let logsBloom = block.logsBloom;
+  console.log('logsBloom:', logsBloom);
+  let miner = block.miner;
+  console.log('miner:', miner);
+  let mixHash = block.mixHash;
+  console.log('mixHash:', mixHash);
+  let nonce = block.nonce;
+  console.log('nonce:', nonce);
+  let number = block.number;
+  console.log('number:', number);
+  let parentHash = block.parentHash;
+  console.log('parentHash:', parentHash);
+  let receiptsRoot = block.receiptsRoot;
+  console.log('receiptsRoot:', receiptsRoot);
+  let sha3Uncles = block.sha3Uncles;
+  console.log('sha3Uncles:', sha3Uncles);
+  let size = block.size;
+  console.log('size:', size);
+  let stateRoot = block.stateRoot;
+  console.log('stateRoot:', stateRoot);
+  let timestamp = block.timestamp;
+  console.log('timestamp:', timestamp);
+  let totalDifficulty = "0x0";
+  console.log('totalDifficulty:', totalDifficulty);
+  let transactions: any[] = [];
+  console.log('transactions:', transactions);
+  let transactionsRoot = block.transactionsRoot;
+  console.log('transactionsRoot:', transactionsRoot);
+  let uncles: any[] = [];
+  console.log('uncles:', uncles);
+  
+  return {
+    baseFeePerGas,
+    blobGasUsed,
+    difficulty,
+    excessBlobGas,
+    extraData,
+    gasLimit,
+    gasUsed,
+    hash,
+    logsBloom,
+    miner,
+    mixHash,
+    nonce,
+    number,
+    parentHash,
+    receiptsRoot,
+    sha3Uncles,
+    size,
+    stateRoot,
+    timestamp,
+    totalDifficulty,
+    transactions,
+    transactionsRoot,
+    uncles
+  }
+}

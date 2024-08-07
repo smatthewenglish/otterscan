@@ -15,10 +15,22 @@ export const tokenLogoURL = (
   address: string,
 ): string => `${assetsURLPrefix}/assets/${chainId}/${address}/logo.png`;
 
+// export const chainInfoURL = (
+//   assetsURLPrefix: string,
+//   chainId: bigint,
+// ): string => `${assetsURLPrefix}/chains/eip155-${chainId}.json`;
 export const chainInfoURL = (
   assetsURLPrefix: string,
   chainId: bigint,
-): string => `${assetsURLPrefix}/chains/eip155-${chainId}.json`;
+): string => {
+  console.log('assetsURLPrefix:', assetsURLPrefix);
+  console.log('chainId:', chainId.toString());
+  
+  const url = `${assetsURLPrefix}/chains/eip155-${chainId}.json`;
+  console.log('Generated URL:', url);
+  
+  return `https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-1.json`;
+};
 
 export const epochURL = (epochNumber: number) => `/epoch/${epochNumber}`;
 

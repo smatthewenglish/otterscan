@@ -37,8 +37,12 @@ export const createAndProbeProvider = async (
   const probeBlockNumber = provider.getBlockNumber();
   
   //const probeHeader1 = provider.send("erigon_getHeaderByNumber", [0]); //[1]);
-  const probeBlock1 = await provider.send("eth_getBlockByNumber", ['0x1', false]);
+
+  const probeBlock1 = await provider.send("eth_getBlockByNumber", ['0x2', false]);
   const probeHeader1 = extractBlockHeader(probeBlock1);
+
+  // const probeHeader1 = await provider.send("erigon_getHeaderByNumber", [0]); //[1]);
+  // extractBlockHeader(probeHeader1);
 
 
   // const probeOtsAPI = provider.send("ots_getApiLevel", []).then((level) => {
@@ -85,21 +89,79 @@ export const createAndProbeProvider = async (
 };
 
 function extractBlockHeader(block: any) {
+  console.log('Sull block object:');
+  console.log(block);
+
+  let baseFeePerGas = "0x3b9aca00";
+  console.log('baseFeePerGas:', baseFeePerGas);
+  let blobGasUsed = "0x0";
+  console.log('blobGasUsed:', blobGasUsed);
+  let difficulty = block.difficulty;
+  console.log('difficulty:', difficulty);
+  let excessBlobGas = "0x0";
+  console.log('excessBlobGas:', excessBlobGas);
+  let extraData = block.extraData;
+  console.log('extraData:', extraData);
+  let gasLimit = block.gasLimit;
+  console.log('gasLimit:', gasLimit);
+  let gasUsed = block.gasUsed;
+  console.log('gasUsed:', gasUsed);
+  let hash = block.hash;
+  console.log('hash:', hash);
+  let logsBloom = block.logsBloom;
+  console.log('logsBloom:', logsBloom);
+  let miner = block.miner;
+  console.log('miner:', miner);
+  let mixHash = block.mixHash;
+  console.log('mixHash:', mixHash);
+  let nonce = block.nonce;
+  console.log('nonce:', nonce);
+  let number = block.number;
+  console.log('number:', number);
+  let parentHash = block.parentHash;
+  console.log('parentHash:', parentHash);
+  let receiptsRoot = block.receiptsRoot;
+  console.log('receiptsRoot:', receiptsRoot);
+  let sha3Uncles = block.sha3Uncles;
+  console.log('sha3Uncles:', sha3Uncles);
+  let size = block.size;
+  console.log('size:', size);
+  let stateRoot = block.stateRoot;
+  console.log('stateRoot:', stateRoot);
+  let timestamp = block.timestamp;
+  console.log('timestamp:', timestamp);
+  let totalDifficulty = "0x0";
+  console.log('totalDifficulty:', totalDifficulty);
+  let transactions: any[] = [];
+  console.log('transactions:', transactions);
+  let transactionsRoot = block.transactionsRoot;
+  console.log('transactionsRoot:', transactionsRoot);
+  let uncles: any[] = [];
+  console.log('uncles:', uncles);
+  
   return {
-    parentHash: block.parentHash,
-    ommersHash: block.sha3Uncles,
-    beneficiary: block.miner,
-    stateRoot: block.stateRoot,
-    transactionsRoot: block.transactionsRoot,
-    receiptsRoot: block.receiptsRoot,
-    logsBloom: block.logsBloom,
-    difficulty: block.difficulty,
-    number: block.number,
-    gasLimit: block.gasLimit,
-    gasUsed: block.gasUsed,
-    timestamp: block.timestamp,
-    extraData: block.extraData,
-    mixHash: block.mixHash,
-    nonce: block.nonce
-  };
+    baseFeePerGas,
+    blobGasUsed,
+    difficulty,
+    excessBlobGas,
+    extraData,
+    gasLimit,
+    gasUsed,
+    hash,
+    logsBloom,
+    miner,
+    mixHash,
+    nonce,
+    number,
+    parentHash,
+    receiptsRoot,
+    sha3Uncles,
+    size,
+    stateRoot,
+    timestamp,
+    totalDifficulty,
+    transactions,
+    transactionsRoot,
+    uncles
+  }
 }
